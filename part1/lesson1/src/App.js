@@ -27,8 +27,11 @@ const Total = (props) => {
 }
 
 const App = () => {
+
+  //Part 1 section A
   const course = 'Half Stack application development'
-  const parts = [
+  const parts = 
+  [
     {
       name: 'Fundamentals of React',
       exercises: 10
@@ -64,8 +67,8 @@ const App = () => {
     <Total 
       total={sum(exerciseArray[0],exerciseArray[1],exerciseArray[2])}
     />
+    
     </div>
-
   )
 }
 
