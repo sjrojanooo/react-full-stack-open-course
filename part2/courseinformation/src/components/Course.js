@@ -2,7 +2,7 @@
 import React from 'react'; 
 
 // Header Component to display the Class Description;
-const Header = ({parts}) => {
+const Header = () => {
     return(
         <h1>Web Development Curriculum</h1>
     )
