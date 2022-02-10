@@ -1,7 +1,7 @@
 import React, {useState} from 'react'; 
-import Numbers from './components/Numbers'; 
-import Form from './components/Form'; 
-
+import Phonebook from './components/Phonebook';
+import PersonForm from './components/PersonForm'; 
+import Persons from './components/Persons'; 
 
 const App = (props) => {
 
@@ -17,7 +17,6 @@ const App = (props) => {
   // State variable for input value used to search contacts; 
   const [newFilter, setNewFilter] = useState('');
 
-  // component to add a new person to the existing array 
   /* 
     targetting the value of the object and setting each event handler to 
     it's specific property. 
@@ -26,13 +25,12 @@ const App = (props) => {
 
     event.preventDefault()
 
-    let nameInput = newPerson; 
-
     let nameArray = persons.map(name => name.name); 
     
     // if either input box is left as a null or undefined then the user will 
     // be alerted to enter a valid name and number
-    if(newNumber === null || 
+    if(
+      newNumber === null || 
       newNumber.length < 9 ||
       newNumber === undefined || 
       newPerson === null ||
@@ -45,9 +43,9 @@ const App = (props) => {
     // conditional statement is using the find method to return the value of the first element; 
     // in the provided array that satisfies the test being performed;
     // if no values are foudn the value return is undefined, and the user is alerted that the contact already exists; 
-    if(nameArray.find(element => element === nameInput) !== undefined)
+    if(nameArray.find(element => element === newPerson) !== undefined)
     { 
-      return alert( nameInput + ' is already in the phonebook!')
+      return alert( newPerson + ' is already in the phonebook!')
     }
     // if all conditional tests are satisfied, the contact will then retrieve the 
     // state variables newPerson & newNumber and add the contact to the phonebook. 
@@ -83,7 +81,7 @@ const App = (props) => {
   }
   
   const handleFilter = (event) => {
-    // console.log(event.target.value)
+    console.log(event.target.value)
     setNewFilter(event.target.value)
   }
 
@@ -98,82 +96,30 @@ const App = (props) => {
   : persons.filter(person => 
       person.name.toLowerCase().includes(newFilter.toLocaleLowerCase())
   );
-  
 
-
-  console.log(results)
+  // console.log(results)
 
   return(
     <div>
       <h2>Phonebook</h2>
-      <form>
-        <div>
-          filter contacts <input 
-          type="search"
-          value={newFilter}
-          onChange={handleFilter}
-          />
-        </div>
-      </form>
-      <hr/>
-      <h3>Add New Contact</h3>
-      <form onSubmit={addPerson}>
-        <div>
-        name: <input 
-          style={{marginBottom:".5rem"}}
-          value={newPerson} onChange={handleAddPerson}
-          />
-        </div>
-        <div>
-        number: <input 
-        style={{marginBottom:".5rem"}}
-        value={newNumber} 
-        onChange={handleAddNumber}
-        /> 
-        </div>
-        <button type="submit">save</button>
-      </form>
+      <Phonebook 
+      newFilter={newFilter}
+      handleFilter={handleFilter}
+      />
+      <PersonForm 
+      handleSubmitPerson={addPerson}
+      handleNewPerson={newPerson}
+      handleSetPerson={handleAddPerson}
+      handleNewNumber={newNumber}
+      handleSetNumber={handleAddNumber}
+      />
       <br/>
       <hr/>
-      <h3>Contact List</h3>
-      <table style={{"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid'}}>
-        <thead>
-        <tr>
-          <th style={{
-                  "padding": "20px",
-                  "borderWidth":"1px",
-                  "borderColor":"#aaaaaa",
-                  "borderStyle":"Solid"
-                }}>Name</th>
-          <th style={{
-                  "padding": "20px",
-                  "borderWidth":"1px",
-                  "borderColor":"#aaaaaa",
-                  "borderStyle":"Solid"
-                }}>Phone Number</th>
-        </tr>
-        </thead>
-        <tbody>
-          {results.map(person => 
-              <tr key={person.id}>
-                <td style={{
-                  "padding": "20px",
-                  "borderWidth":"1px",
-                  "borderColor":"#aaaaaa",
-                  "borderStyle":"Solid"
-                }}
-                >{person.name}</td>
-                <td style={{
-                  "padding": "20px",
-                  "borderWidth":"1px",
-                  "borderColor":"#aaaaaa",
-                  "borderStyle":"Solid"
-                }}
-                >{person.number}</td>
-              </tr>
-            )}
-        </tbody>
-      </table>
+      {/* here i am passing the results variable 
+        into our persons component so that the filtering conditional logic from above will 
+        take place on the newly filtered collection; 
+      */}
+      <Persons results={results}/>
     </div>
   )
 
