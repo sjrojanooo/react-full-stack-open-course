@@ -1,12 +1,13 @@
-import React, {useState} from 'react'; 
+import React, {useState, useEffect} from 'react'; 
 import Phonebook from './components/Phonebook';
 import PersonForm from './components/PersonForm'; 
 import Persons from './components/Persons'; 
+import contactService from './services/contacts'; 
 
-const App = (props) => {
+const App = () => {
 
   // passing the array of persons into the useState function using our props parameter;
-  const [persons, setPersons] = useState(props.persons); 
+  const [persons, setPersons] = useState([]); 
 
   // State variable to create a new person; 
   const [newPerson, setNewPerson] = useState('');
@@ -17,15 +18,60 @@ const App = (props) => {
   // State variable for input value used to search contacts; 
   const [newFilter, setNewFilter] = useState('');
 
+  /*
+    using the state hook side effect component to fetch our persons data from the server; 
+    the empty array dictates the behaviour of the useEffect, the effect is only run with the first render of the component; 
+
+  */
+
+  // using a service to fetch the data from the server; 
+  useEffect(() => {
+    
+    if(newFilter === '')
+    {
+      contactService
+      .getAll()
+      .then(initialContacts => {
+        setPersons(initialContacts)
+      })
+      .catch(err => {
+        console.log(err)
+      })
+    }
+    else
+    {
+      contactService
+      .getAll()
+      .then(initialContacts => {
+        const results = initialContacts.filter(contact => 
+          contact.name.toLowerCase().includes(newFilter.toLowerCase())
+        )
+        setPersons(results)
+      })
+    }
+  },[newFilter])
+
   /* 
     targetting the value of the object and setting each event handler to 
     it's specific property. 
   */
   const addPerson = (event) => {
 
-    event.preventDefault()
+    event.preventDefault();
 
-    let nameArray = persons.map(name => name.name); 
+    // I added a function inside the id property. I noticed that when I deleted all contacts 
+    // the program resulted in an error. 
+    const newPersonObject = {
+      name: newPerson, 
+      number: newNumber, 
+      // function assigns a def
+      id: function (persons) {
+        return persons[persons.length -1].id + 1
+      } 
+    }
+
+    console.log(newPersonObject)
+    
     
     // if either input box is left as a null or undefined then the user will 
     // be alerted to enter a valid name and number
@@ -40,27 +86,55 @@ const App = (props) => {
         return alert('Please enter a valid name and number!')
       }
 
-    // conditional statement is using the find method to return the value of the first element; 
-    // in the provided array that satisfies the test being performed;
-    // if no values are foudn the value return is undefined, and the user is alerted that the contact already exists; 
-    if(nameArray.find(element => element === newPerson) !== undefined)
-    { 
-      return alert( newPerson + ' is already in the phonebook!')
-    }
-    // if all conditional tests are satisfied, the contact will then retrieve the 
-    // state variables newPerson & newNumber and add the contact to the phonebook. 
-    else
+    
+    // finding a name that matched the value entered in the input element 
+    const contactId = persons.find(person => person.name === newPersonObject.name)
+
+    // changing the phone number if for that contact if there is a match. 
+    const changedNumber = {...contactId, number: newPersonObject.number}
+
+    console.log(changedNumber)
+
+    if(
+      persons.find(person => person.name === newPersonObject.name) !== undefined &&
+      persons.find(person => person.number === newPersonObject.number) === undefined
+      )
     {
-      const newPersonObject = {
-        name: newPerson, 
-        number: newNumber, 
-        id: persons.length + 1
-      };
-      // console.log(newPersonObject);
-      setPersons(persons.concat(newPersonObject));
+      if(window.confirm(`${newPersonObject.name} is already added to phonebook, replace old number with new one?`))
+      {
+
+        contactService
+        .modify(changedNumber.id, changedNumber)
+        .then(modifiedNumber => {
+          setPersons(persons.map(person => person.id !== modifiedNumber.id ? person : modifiedNumber))
+        })
+        
+      }  
+    }
+    else if(persons.find(person => person.name === newPersonObject.name) !== undefined)
+    { 
+      alert(`${newPersonObject.name} is already in the phone book`)
       setNewNumnber('');
       setNewPerson(''); 
     }
+    else
+    {
+
+      contactService
+      .create(newPersonObject)
+      .then(returnedObject => {
+        setPersons(persons.concat(returnedObject))
+        setNewNumnber('');
+        setNewPerson('');
+      })
+
+      console.log(newPersonObject)
+      console.log(persons)
+
+    }
+
+    setNewNumnber('');
+    setNewPerson(''); 
   }
 
 
@@ -73,6 +147,8 @@ const App = (props) => {
   const handleAddPerson = (event) => {
     // console.log(event.target.value)
     setNewPerson(event.target.value)
+
+    console.log(newPerson)
   }
 
   const handleAddNumber = (event) => {
@@ -81,24 +157,28 @@ const App = (props) => {
   }
   
   const handleFilter = (event) => {
-    console.log(event.target.value)
+    // console.log(event.target.value)
     setNewFilter(event.target.value)
   }
 
-  /* 
-    filter logic if there is no input value for the filter 
-    we will copy all elements and values in the array
-    otherwise we are returning all names in lower case format 
-    and finding all values in the array that match a value types in the input element;
-  */
-  const results = !newFilter
-  ? [...persons] // spread operator to make a copy of the initial state array 
-  : persons.filter(person => 
-      person.name.toLowerCase().includes(newFilter.toLocaleLowerCase())
-  );
+  const deleteContactId = id => {
+    // finds the note that we want to modify and we assign it to the note variable
+    const personSelected = persons.find(n => n.id === id); 
+    const personObject = persons.filter(person => person.id !== id)
+    
+    if(window.confirm(`Are you sure you want to delete ${personSelected.name}`)){
+      contactService
+      .deletePerson(id)
+      .then(response => {
+        setPersons(personObject)
+      })
+    }
+    else
+    console.log(personObject)
+    console.log(persons)
 
-  // console.log(results)
-
+  }
+  
   return(
     <div>
       <h2>Phonebook</h2>
@@ -106,6 +186,7 @@ const App = (props) => {
       newFilter={newFilter}
       handleFilter={handleFilter}
       />
+
       <PersonForm 
       handleSubmitPerson={addPerson}
       handleNewPerson={newPerson}
@@ -115,11 +196,22 @@ const App = (props) => {
       />
       <br/>
       <hr/>
+      
       {/* here i am passing the results variable 
         into our persons component so that the filtering conditional logic from above will 
         take place on the newly filtered collection; 
       */}
-      <Persons results={results}/>
+
+      <ul>
+        {persons.map(person =>
+          <Persons 
+            key={person.id}
+            person={person}
+            deleteContact={() => deleteContactId(person.id)}
+          />  
+        )}
+      </ul>
+
     </div>
   )
 

@@ -8,54 +8,17 @@ import React from 'react';
     html table. 
 */
 
-const Person = ({results}) => {
-
-    console.log(results)
-    
+const Person = ({person, deleteContact}) => {
 
     return(
-        <div>
-        <h3>Contact List</h3>
-        <table style={{"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid'}}>
-          <thead>
-          <tr>
-            <th style={{
-                    "padding": "20px",
-                    "borderWidth":"1px",
-                    "borderColor":"#aaaaaa",
-                    "borderStyle":"Solid"
-                  }}>Name</th>
-            <th style={{
-                    "padding": "20px",
-                    "borderWidth":"1px",
-                    "borderColor":"#aaaaaa",
-                    "borderStyle":"Solid"
-                  }}>Phone Number</th>
-          </tr>
-          </thead>
-          <tbody>
-            {results.map(person => 
-                <tr key={person.id}>
-                  <td style={{
-                    "padding": "20px",
-                    "borderWidth":"1px",
-                    "borderColor":"#aaaaaa",
-                    "borderStyle":"Solid"
-                  }}
-                  >{person.name}</td>
-                  <td style={{
-                    "padding": "20px",
-                    "borderWidth":"1px",
-                    "borderColor":"#aaaaaa",
-                    "borderStyle":"Solid"
-                  }}
-                  >{person.number}</td>
-                </tr>
-              )}
-          </tbody>
-        </table>
-        </div>
-  
+      <li>{person.name} {person.number}
+      <button 
+      style={{
+        "marginLeft":"5px",
+        "marginTop":"5px"
+      }}
+      onClick={deleteContact}>delete</button>
+      </li>
     )
 }
 

@@ -13,7 +13,7 @@ const PersonForm = (props) => {
             <form onSubmit={props.handleSubmitPerson}>
                 <div>
                     name: <input 
-                    style={{marginBottom:".5rem"}}
+                    style={{"marginBottom":".5rem"}}
                     type="input"
                     value={props.handleNewPerson}
                     onChange={props.handleSetPerson}
@@ -21,13 +21,13 @@ const PersonForm = (props) => {
                 </div>
                 <div>
                     number: <input 
-                    style={{marginBottom:".5rem"}}
+                    style={{"marginBottom":".5rem"}}
                     type="input"
                     value={props.handleNewNumber}
                     onChange={props.handleSetNumber}
                     />
                 </div>
-                <button type="submit">Add Contact</button>
+                <button type="submit">Add</button>
             </form>
         </div>
     )
