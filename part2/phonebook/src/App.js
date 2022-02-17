@@ -2,7 +2,11 @@ import React, {useState, useEffect} from 'react';
 import Phonebook from './components/Phonebook';
 import PersonForm from './components/PersonForm'; 
 import Persons from './components/Persons'; 
+import Footer from './components/Footer'; 
+import ErrorNotification from './components/ErrorNotification'; 
+import AddedUsers from './components/AddedUsers'; 
 import contactService from './services/contacts'; 
+import './index.css'
 
 const App = () => {
 
@@ -18,6 +22,12 @@ const App = () => {
   // State variable for input value used to search contacts; 
   const [newFilter, setNewFilter] = useState('');
 
+  // State variable that displays the messages to the user; 
+  const [newErrorMessage, setErrorMessage] = useState(null); 
+
+  // state variable that dispalys when a user was added; 
+  const [newUserAddedMessage, setUserAddedMessage] = useState(null); 
+  
   /*
     using the state hook side effect component to fetch our persons data from the server; 
     the empty array dictates the behaviour of the useEffect, the effect is only run with the first render of the component; 
@@ -33,9 +43,16 @@ const App = () => {
       .getAll()
       .then(initialContacts => {
         setPersons(initialContacts)
+
       })
+
       .catch(err => {
         console.log(err)
+        setTimeout(() => {
+          setUserAddedMessage(null)
+          setErrorMessage(null)
+        },4000)
+
       })
     }
     else
@@ -47,6 +64,13 @@ const App = () => {
           contact.name.toLowerCase().includes(newFilter.toLowerCase())
         )
         setPersons(results)
+      })
+      .catch(err => {
+        console.log(err)
+        setTimeout(() => {
+          setUserAddedMessage(null)
+          setErrorMessage(null)
+        },4000)
       })
     }
   },[newFilter])
@@ -96,7 +120,7 @@ const App = () => {
     console.log(changedNumber)
 
     if(
-      persons.find(person => person.name === newPersonObject.name) !== undefined &&
+      persons.find(person => person.name.toLowerCase() === newPersonObject.name.toLowerCase()) !== undefined &&
       persons.find(person => person.number === newPersonObject.number) === undefined
       )
     {
@@ -108,10 +132,17 @@ const App = () => {
         .then(modifiedNumber => {
           setPersons(persons.map(person => person.id !== modifiedNumber.id ? person : modifiedNumber))
         })
+        .catch(err => {
+          setErrorMessage(`Information for ${changedNumber.name} has already been removed from the server`); 
+          setTimeout(()=>{
+            setErrorMessage(null)
+          },4000)
+
+        })
         
       }  
     }
-    else if(persons.find(person => person.name === newPersonObject.name) !== undefined)
+    else if(persons.find(person => person.name.toLowerCase() === newPersonObject.name.toLowerCase()) !== undefined)
     { 
       alert(`${newPersonObject.name} is already in the phone book`)
       setNewNumnber('');
@@ -124,8 +155,19 @@ const App = () => {
       .create(newPersonObject)
       .then(returnedObject => {
         setPersons(persons.concat(returnedObject))
+
         setNewNumnber('');
         setNewPerson('');
+
+        setUserAddedMessage(
+          `Successfully Added ${newPersonObject.name}`
+        )
+        setTimeout(() => {
+          setUserAddedMessage(null)
+        },4000)
+      })
+      .catch(err => {
+
       })
 
       console.log(newPersonObject)
@@ -161,6 +203,8 @@ const App = () => {
     setNewFilter(event.target.value)
   }
 
+
+
   const deleteContactId = id => {
     // finds the note that we want to modify and we assign it to the note variable
     const personSelected = persons.find(n => n.id === id); 
@@ -172,12 +216,16 @@ const App = () => {
       .then(response => {
         setPersons(personObject)
       })
+      .catch(err => {
+
+      })
     }
     else
     console.log(personObject)
     console.log(persons)
 
   }
+
   
   return(
     <div>
@@ -186,7 +234,8 @@ const App = () => {
       newFilter={newFilter}
       handleFilter={handleFilter}
       />
-
+      <AddedUsers addedUserMessage={newUserAddedMessage}/>
+      <ErrorNotification errorMessage={newErrorMessage}/>
       <PersonForm 
       handleSubmitPerson={addPerson}
       handleNewPerson={newPerson}
@@ -201,7 +250,6 @@ const App = () => {
         into our persons component so that the filtering conditional logic from above will 
         take place on the newly filtered collection; 
       */}
-
       <ul>
         {persons.map(person =>
           <Persons 
@@ -211,7 +259,7 @@ const App = () => {
           />  
         )}
       </ul>
-
+      <Footer/>
     </div>
   )
 
