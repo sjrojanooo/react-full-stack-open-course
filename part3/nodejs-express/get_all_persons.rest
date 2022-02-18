@@ -1,0 +1,19 @@
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name":"Mini Montana",
+    "number":"123456789"
+}
+
+###
+GET http://localhost:3001/api/persons
+
+###
+GET http://localhost:3001/api/persons/9
+
+###
+DELETE http://localhost:3001/api/persons/9
+
+###
+GET http://localhost:3001/api/info
